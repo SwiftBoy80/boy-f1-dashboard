@@ -53,7 +53,8 @@ h1 {
 
 .number {
     font-weight: bold;
-    font-size: 18px;
+    font-size: 20px;
+    min-width: 50px;
 }
 
 .team {
