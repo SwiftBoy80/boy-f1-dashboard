@@ -15,57 +15,8 @@ const teamColors = {
 
 async function loadSession() {
 
-    const response = await fetch(
-        "https://api.openf1.org/v1/sessions?session_key=latest"
-    );
+    console.log("loadSession gestart");
 
-    const data = await response.json();
-
-    if (!data.length) {
-        return;
-    }
-
-    const session = data[0];
-
-    const sessionName =
-        document.getElementById("sessionName");
-
-    const circuitName =
-        document.getElementById("circuitName");
-
-    const countryName =
-        document.getElementById("countryName");
-
-    const eventName =
-        document.getElementById("eventName");
-
-    const sessionTitle =
-        document.getElementById("sessionTitle");
-
-    if (sessionName) {
-        sessionName.textContent =
-            session.session_name || "-";
-    }
-
-    if (circuitName) {
-        circuitName.textContent =
-            session.circuit_short_name || "-";
-    }
-
-    if (countryName) {
-        countryName.textContent =
-            session.country_name || "-";
-    }
-
-    if (eventName) {
-        eventName.textContent =
-            session.meeting_name || "Formula 1";
-    }
-
-    if (sessionTitle) {
-        sessionTitle.textContent =
-            session.session_name || "-";
-    }
 }
 
 async function loadLatestPositions() {
