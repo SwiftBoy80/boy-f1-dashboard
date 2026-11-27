@@ -107,12 +107,27 @@ const latestLaps =
         const positionData =
             latestPositions[driver.driver_number];
 
-        return {
-            ...driver,
-            position: positionData
-                ? positionData.position
-                : 99
-        };
+const lapData =
+    latestLaps[driver.driver_number];
+
+return {
+
+    ...driver,
+
+    position:
+        positionData
+            ? positionData.position
+            : 99,
+
+    lastLap:
+        lapData?.lap_duration || null,
+
+    tyre:
+        tyreMap[
+            lapData?.st_speed || 0
+        ] || "-"
+
+};
     });
 
     leaderboard.sort((a, b) =>
@@ -142,29 +157,41 @@ const latestLaps =
             gapText = `+${index}`;
         }
 
-        row.innerHTML = `
+const lapTime =
+    driver.lastLap
+        ? driver.lastLap.toFixed(3)
+        : "---";
 
-            <span
-                class="number"
-                style="color:${color}">
-                P${driver.position}
-            </span>
+row.innerHTML = `
 
-            <span>
-                ${driver.full_name}
-            </span>
+    <span
+        class="number"
+        style="color:${color}">
+        P${driver.position}
+    </span>
 
-            <span class="gap">
-                ${gapText}
-            </span>
+    <span
+        class="driverCode">
+        ${driver.name_acronym}
+    </span>
 
-            <span
-                class="team"
-                style="color:${color}">
-                ${driver.team_name}
-            </span>
+    <span
+        class="lapTime">
+        ${lapTime}
+    </span>
 
-        `;
+    <span
+        class="tyre">
+        ${driver.tyre}
+    </span>
+
+    <span
+        class="team"
+        style="color:${color}">
+        ${driver.team_name}
+    </span>
+
+`;
 
         list.appendChild(row);
 
@@ -187,8 +214,12 @@ async function loadDashboard() {
 
         console.error(error);
 
-        document.getElementById("raceStatus")
-            .textContent = "❌ API fout";
+document.getElementById(
+    "lastUpdate"
+).textContent =
+    new Date().toLocaleTimeString(
+        "nl-NL"
+    );
 
     }
 
