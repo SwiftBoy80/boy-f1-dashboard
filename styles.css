@@ -37,13 +37,10 @@ h1 {
 
 .driver {
     display: grid;
-    grid-template-columns: 60px 1fr 180px;
+    grid-template-columns: 60px 1fr 100px 180px;
     gap: 10px;
-
     align-items: center;
-
     padding: 10px;
-
     border-bottom: 1px solid #333;
 }
 
@@ -61,6 +58,12 @@ h1 {
     font-size: 14px;
     font-weight: bold;
     text-align: right;
+}
+
+.gap {
+    text-align: center;
+    color: #bbbbbb;
+    font-family: monospace;
 }
 
 .infoRow {
