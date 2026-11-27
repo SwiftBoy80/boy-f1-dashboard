@@ -11,17 +11,6 @@ const teamColors = {
     "Racing Bulls": "#6692FF"
 };
 
-const tyreMap = {
-
-    0: "-",
-    16: "S",
-    17: "M",
-    18: "H",
-    19: "I",
-    20: "W"
-
-};
-
 async function loadSession() {
 
     const response = await fetch(
@@ -40,8 +29,45 @@ async function loadSession() {
     document.getElementById("circuitName").textContent =
         session.circuit_short_name;
 
-    document.getElementById("country").textContent =
+    document.getElementById("countryName").textContent =
         session.country_name;
+
+    document.getElementById("eventName").textContent =
+        session.meeting_name;
+
+    document.getElementById("sessionTitle").textContent =
+        session.session_name;
+}
+
+async function loadLatestPositions() {
+
+    const response = await fetch(
+        "https://api.openf1.org/v1/position?session_key=latest"
+    );
+
+    const positions = await response.json();
+
+    const latestPositions = {};
+
+    positions.forEach(position => {
+
+        const driverNumber =
+            position.driver_number;
+
+        if (
+            !latestPositions[driverNumber] ||
+            new Date(position.date) >
+            new Date(
+                latestPositions[driverNumber].date
+            )
+        ) {
+            latestPositions[driverNumber] =
+                position;
+        }
+
+    });
+
+    return latestPositions;
 }
 
 async function loadLatestLaps() {
@@ -56,14 +82,18 @@ async function loadLatestLaps() {
 
     laps.forEach(lap => {
 
-        const number = lap.driver_number;
+        const driverNumber =
+            lap.driver_number;
 
         if (
-            !latestLaps[number] ||
+            !latestLaps[driverNumber] ||
             new Date(lap.date_start) >
-            new Date(latestLaps[number].date_start)
+            new Date(
+                latestLaps[driverNumber]
+                    .date_start
+            )
         ) {
-            latestLaps[number] = lap;
+            latestLaps[driverNumber] = lap;
         }
 
     });
@@ -77,121 +107,96 @@ async function loadDrivers() {
         "https://api.openf1.org/v1/drivers?session_key=latest"
     );
 
-    const positionsResponse = await fetch(
-        "https://api.openf1.org/v1/position?session_key=latest"
-    );
+    const drivers =
+        await driversResponse.json();
 
-const drivers = await driversResponse.json();
-const positions = await positionsResponse.json();
+    const positions =
+        await loadLatestPositions();
 
-const latestLaps =
-    await loadLatestLaps();
+    const laps =
+        await loadLatestLaps();
 
-    const latestPositions = {};
+    const leaderboard =
+        drivers.map(driver => {
 
-    positions.forEach(pos => {
+            const position =
+                positions[
+                    driver.driver_number
+                ];
 
-        const number = pos.driver_number;
+            const lap =
+                laps[
+                    driver.driver_number
+                ];
 
-        if (
-            !latestPositions[number] ||
-            new Date(pos.date) >
-            new Date(latestPositions[number].date)
-        ) {
-            latestPositions[number] = pos;
-        }
-    });
+            return {
 
-    const leaderboard = drivers.map(driver => {
+                ...driver,
 
-        const positionData =
-            latestPositions[driver.driver_number];
+                position:
+                    position
+                    ? position.position
+                    : 99,
 
-const lapData =
-    latestLaps[driver.driver_number];
+                lapTime:
+                    lap?.lap_duration
+                    ? lap.lap_duration.toFixed(3)
+                    : "---"
 
-return {
+            };
 
-    ...driver,
+        });
 
-    position:
-        positionData
-            ? positionData.position
-            : 99,
-
-    lastLap:
-        lapData?.lap_duration || null,
-
-    tyre:
-        tyreMap[
-            lapData?.st_speed || 0
-        ] || "-"
-
-};
-    });
-
-    leaderboard.sort((a, b) =>
+    leaderboard.sort(
+        (a, b) =>
         a.position - b.position
     );
 
     const list =
-        document.getElementById("driverList");
+        document.getElementById(
+            "driverList"
+        );
 
     list.innerHTML = "";
 
-    leaderboard.forEach((driver, index) => {
+    leaderboard.forEach(driver => {
 
         const row =
             document.createElement("div");
 
-        row.className = "driver";
+        row.className =
+            "driver";
 
         const color =
-            teamColors[driver.team_name] || "#ffffff";
+            teamColors[
+                driver.team_name
+            ] || "#ffffff";
 
-        let gapText = "-";
+        row.innerHTML = `
 
-        if (index === 0) {
-            gapText = "LEADER";
-        } else {
-            gapText = `+${index}`;
-        }
+            <div
+                class="position"
+                style="color:${color}">
+                P${driver.position}
+            </div>
 
-const lapTime =
-    driver.lastLap
-        ? driver.lastLap.toFixed(3)
-        : "---";
+            <div
+                class="driverCode">
+                ${driver.name_acronym}
+            </div>
 
-row.innerHTML = `
+            <div
+                class="lapTime">
+                ${driver.lapTime}
+            </div>
 
-    <span
-        class="number"
-        style="color:${color}">
-        P${driver.position}
-    </span>
+            <div
+                class="team"
+                style="color:${color}">
+                ${driver.team_name}
+            </div>
 
-    <span
-        class="driverCode">
-        ${driver.name_acronym}
-    </span>
-
-    <span
-        class="lapTime">
-        ${lapTime}
-    </span>
-
-    <span
-        class="tyre">
-        ${driver.tyre}
-    </span>
-
-    <span
-        class="team"
-        style="color:${color}">
-        ${driver.team_name}
-    </span>
-
-`;
+        `;
 
         list.appendChild(row);
 
@@ -203,23 +208,32 @@ async function loadDashboard() {
 
     try {
 
-        document.getElementById("raceStatus")
-            .textContent = "✅ Verbonden";
+        document.getElementById(
+            "raceStatus"
+        ).textContent =
+            "🟢 LIVE";
 
         await loadSession();
+
         await loadDrivers();
 
+        document.getElementById(
+            "lastUpdate"
+        ).textContent =
+            new Date().toLocaleTimeString(
+                "nl-NL"
+            );
+
     }
+
     catch (error) {
 
         console.error(error);
 
-document.getElementById(
-    "lastUpdate"
-).textContent =
-    new Date().toLocaleTimeString(
-        "nl-NL"
-    );
+        document.getElementById(
+            "raceStatus"
+        ).textContent =
+            "🔴 OFFLINE";
 
     }
 
