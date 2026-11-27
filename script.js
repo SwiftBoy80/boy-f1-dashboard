@@ -1,5 +1,5 @@
-alert("NIEUWE SCRIPT GELADEN");
-console.log("SCRIPT VERSION 27-11-2026");
+console.log("BOY PIT WALL - SCRIPT GELADEN");
+
 const teamColors = {
     "Red Bull Racing": "#3671C6",
     "McLaren": "#FF8000",
@@ -15,8 +15,50 @@ const teamColors = {
 
 async function loadSession() {
 
-    console.log("loadSession gestart");
+    const response = await fetch(
+        "https://api.openf1.org/v1/sessions?session_key=latest"
+    );
 
+    const data = await response.json();
+
+    console.log("Session:", data);
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    const session = data[0];
+
+    const sessionName = document.getElementById("sessionName");
+    const circuitName = document.getElementById("circuitName");
+    const countryName = document.getElementById("countryName");
+    const eventName = document.getElementById("eventName");
+    const sessionTitle = document.getElementById("sessionTitle");
+
+    if (sessionName) {
+        sessionName.textContent =
+            session.session_name || "-";
+    }
+
+    if (circuitName) {
+        circuitName.textContent =
+            session.circuit_short_name || "-";
+    }
+
+    if (countryName) {
+        countryName.textContent =
+            session.country_name || "-";
+    }
+
+    if (eventName) {
+        eventName.textContent =
+            session.meeting_name || "Formula 1";
+    }
+
+    if (sessionTitle) {
+        sessionTitle.textContent =
+            session.session_name || "-";
+    }
 }
 
 async function loadLatestPositions() {
@@ -26,6 +68,8 @@ async function loadLatestPositions() {
     );
 
     const positions = await response.json();
+
+    console.log("Positions:", positions.length);
 
     const latestPositions = {};
 
@@ -50,101 +94,56 @@ async function loadLatestPositions() {
     return latestPositions;
 }
 
-async function loadLatestLaps() {
-
-    const response = await fetch(
-        "https://api.openf1.org/v1/laps?session_key=latest"
-    );
-
-    const laps = await response.json();
-
-    const latestLaps = {};
-
-    laps.forEach(lap => {
-
-        const driverNumber =
-            lap.driver_number;
-
-        if (
-            !latestLaps[driverNumber] ||
-            (
-                lap.date_start &&
-                latestLaps[driverNumber].date_start &&
-                new Date(lap.date_start) >
-                new Date(
-                    latestLaps[driverNumber].date_start
-                )
-            )
-        ) {
-            latestLaps[driverNumber] = lap;
-        }
-
-    });
-
-    return latestLaps;
-}
-
 async function loadDrivers() {
 
-    const driversResponse = await fetch(
+    const response = await fetch(
         "https://api.openf1.org/v1/drivers?session_key=latest"
     );
 
-    const drivers =
-        await driversResponse.json();
+    const drivers = await response.json();
+
+    console.log("Drivers:", drivers.length);
 
     const positions =
         await loadLatestPositions();
 
-    const laps =
-        await loadLatestLaps();
+    const leaderboard = drivers.map(driver => {
 
-    const leaderboard =
-        drivers.map(driver => {
+        const positionData =
+            positions[
+            driver.driver_number
+            ];
 
-            const positionData =
-                positions[
-                    driver.driver_number
-                ];
+        return {
 
-            const lapData =
-                laps[
-                    driver.driver_number
-                ];
+            ...driver,
 
-            return {
+            position:
+                positionData
+                    ? positionData.position
+                    : 99
 
-                ...driver,
+        };
 
-                position:
-                    positionData
-                        ? positionData.position
-                        : 99,
+    });
 
-                lapTime:
-                    lapData?.lap_duration
-                        ? lapData.lap_duration.toFixed(3)
-                        : "---"
-
-            };
-
-        });
-
-    leaderboard.sort(
-        (a, b) =>
-            a.position - b.position
+    leaderboard.sort((a, b) =>
+        a.position - b.position
     );
 
-    const list =
+    const driverList =
         document.getElementById(
             "driverList"
         );
 
-    if (!list) {
+    if (!driverList) {
+        console.error(
+            "driverList niet gevonden"
+        );
         return;
     }
 
-    list.innerHTML = "";
+    driverList.innerHTML = "";
 
     leaderboard.forEach(driver => {
 
@@ -159,9 +158,7 @@ async function loadDrivers() {
             ] || "#ffffff";
 
         row.innerHTML = `
-            <div
-                class="position"
-                style="color:${color}">
+            <div class="position" style="color:${color}">
                 P${driver.position}
             </div>
 
@@ -170,17 +167,15 @@ async function loadDrivers() {
             </div>
 
             <div class="lapTime">
-                ${driver.lapTime}
+                -
             </div>
 
-            <div
-                class="team"
-                style="color:${color}">
-                ${driver.team_name || "-"}
+            <div class="team" style="color:${color}">
+                ${driver.team_name}
             </div>
         `;
 
-        list.appendChild(row);
+        driverList.appendChild(row);
 
     });
 
@@ -238,5 +233,7 @@ async function loadDashboard() {
 loadDashboard();
 
 setInterval(() => {
+
     loadDashboard();
+
 }, 10000);
