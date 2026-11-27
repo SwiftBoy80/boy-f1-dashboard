@@ -19,24 +19,51 @@ async function loadSession() {
 
     const data = await response.json();
 
-    if (!data.length) return;
+    if (!data.length) {
+        return;
+    }
 
     const session = data[0];
 
-    document.getElementById("sessionName").textContent =
-        session.session_name;
+    const sessionName =
+        document.getElementById("sessionName");
 
-    document.getElementById("circuitName").textContent =
-        session.circuit_short_name;
+    const circuitName =
+        document.getElementById("circuitName");
 
-    document.getElementById("countryName").textContent =
-        session.country_name;
+    const countryName =
+        document.getElementById("countryName");
 
-    document.getElementById("eventName").textContent =
-        session.meeting_name;
+    const eventName =
+        document.getElementById("eventName");
 
-    document.getElementById("sessionTitle").textContent =
-        session.session_name;
+    const sessionTitle =
+        document.getElementById("sessionTitle");
+
+    if (sessionName) {
+        sessionName.textContent =
+            session.session_name || "-";
+    }
+
+    if (circuitName) {
+        circuitName.textContent =
+            session.circuit_short_name || "-";
+    }
+
+    if (countryName) {
+        countryName.textContent =
+            session.country_name || "-";
+    }
+
+    if (eventName) {
+        eventName.textContent =
+            session.meeting_name || "Formula 1";
+    }
+
+    if (sessionTitle) {
+        sessionTitle.textContent =
+            session.session_name || "-";
+    }
 }
 
 async function loadLatestPositions() {
@@ -87,10 +114,13 @@ async function loadLatestLaps() {
 
         if (
             !latestLaps[driverNumber] ||
-            new Date(lap.date_start) >
-            new Date(
-                latestLaps[driverNumber]
-                    .date_start
+            (
+                lap.date_start &&
+                latestLaps[driverNumber].date_start &&
+                new Date(lap.date_start) >
+                new Date(
+                    latestLaps[driverNumber].date_start
+                )
             )
         ) {
             latestLaps[driverNumber] = lap;
@@ -119,12 +149,12 @@ async function loadDrivers() {
     const leaderboard =
         drivers.map(driver => {
 
-            const position =
+            const positionData =
                 positions[
                     driver.driver_number
                 ];
 
-            const lap =
+            const lapData =
                 laps[
                     driver.driver_number
                 ];
@@ -134,14 +164,14 @@ async function loadDrivers() {
                 ...driver,
 
                 position:
-                    position
-                    ? position.position
-                    : 99,
+                    positionData
+                        ? positionData.position
+                        : 99,
 
                 lapTime:
-                    lap?.lap_duration
-                    ? lap.lap_duration.toFixed(3)
-                    : "---"
+                    lapData?.lap_duration
+                        ? lapData.lap_duration.toFixed(3)
+                        : "---"
 
             };
 
@@ -149,13 +179,17 @@ async function loadDrivers() {
 
     leaderboard.sort(
         (a, b) =>
-        a.position - b.position
+            a.position - b.position
     );
 
     const list =
         document.getElementById(
             "driverList"
         );
+
+    if (!list) {
+        return;
+    }
 
     list.innerHTML = "";
 
@@ -164,8 +198,7 @@ async function loadDrivers() {
         const row =
             document.createElement("div");
 
-        row.className =
-            "driver";
+        row.className = "driver";
 
         const color =
             teamColors[
@@ -173,29 +206,25 @@ async function loadDrivers() {
             ] || "#ffffff";
 
         row.innerHTML = `
-
             <div
                 class="position"
                 style="color:${color}">
                 P${driver.position}
             </div>
 
-            <div
-                class="driverCode">
-                ${driver.name_acronym}
+            <div class="driverCode">
+                ${driver.name_acronym || driver.full_name}
             </div>
 
-            <div
-                class="lapTime">
+            <div class="lapTime">
                 ${driver.lapTime}
             </div>
 
             <div
                 class="team"
                 style="color:${color}">
-                ${driver.team_name}
+                ${driver.team_name || "-"}
             </div>
-
         `;
 
         list.appendChild(row);
@@ -208,32 +237,46 @@ async function loadDashboard() {
 
     try {
 
-        document.getElementById(
-            "raceStatus"
-        ).textContent =
-            "🟢 LIVE";
+        const raceStatus =
+            document.getElementById(
+                "raceStatus"
+            );
+
+        if (raceStatus) {
+            raceStatus.textContent =
+                "🟢 LIVE";
+        }
 
         await loadSession();
 
         await loadDrivers();
 
-        document.getElementById(
-            "lastUpdate"
-        ).textContent =
-            new Date().toLocaleTimeString(
-                "nl-NL"
+        const lastUpdate =
+            document.getElementById(
+                "lastUpdate"
             );
 
-    }
+        if (lastUpdate) {
+            lastUpdate.textContent =
+                new Date().toLocaleTimeString(
+                    "nl-NL"
+                );
+        }
 
+    }
     catch (error) {
 
         console.error(error);
 
-        document.getElementById(
-            "raceStatus"
-        ).textContent =
-            "🔴 OFFLINE";
+        const raceStatus =
+            document.getElementById(
+                "raceStatus"
+            );
+
+        if (raceStatus) {
+            raceStatus.textContent =
+                "🔴 OFFLINE";
+        }
 
     }
 
@@ -242,7 +285,5 @@ async function loadDashboard() {
 loadDashboard();
 
 setInterval(() => {
-
     loadDashboard();
-
 }, 10000);
