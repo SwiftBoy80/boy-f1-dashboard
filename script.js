@@ -1,4 +1,4 @@
-console.log("BOY PIT WALL v2 GELADEN");
+console.log("BOY PIT WALL v3 GELADEN");
 
 let currentSessionType = "";
 
@@ -56,7 +56,7 @@ async function loadSession() {
 
     console.log("Session:", data);
 
-    if (!data.length) {
+    if (!data || data.length === 0) {
         return;
     }
 
@@ -70,55 +70,30 @@ async function loadSession() {
             session.session_name
         );
 
-    const sessionName =
-        document.getElementById(
-            "sessionName"
-        );
+    document.getElementById(
+        "sessionName"
+    ).textContent =
+        session.session_name || "-";
 
-    const circuitName =
-        document.getElementById(
-            "circuitName"
-        );
+    document.getElementById(
+        "circuitName"
+    ).textContent =
+        session.circuit_short_name || "-";
 
-    const countryName =
-        document.getElementById(
-            "countryName"
-        );
+    document.getElementById(
+        "countryName"
+    ).textContent =
+        session.country_name || "-";
 
-    const eventName =
-        document.getElementById(
-            "eventName"
-        );
+    document.getElementById(
+        "eventName"
+    ).textContent =
+        session.meeting_name || "-";
 
-    const sessionTitle =
-        document.getElementById(
-            "sessionTitle"
-        );
-
-    if (sessionName) {
-        sessionName.textContent =
-            session.session_name;
-    }
-
-    if (circuitName) {
-        circuitName.textContent =
-            session.circuit_short_name;
-    }
-
-    if (countryName) {
-        countryName.textContent =
-            session.country_name;
-    }
-
-    if (eventName) {
-        eventName.textContent =
-            session.meeting_name;
-    }
-
-    if (sessionTitle) {
-        sessionTitle.textContent =
-            sessionCode;
-    }
+    document.getElementById(
+        "sessionTitle"
+    ).textContent =
+        sessionCode;
 }
 
 async function loadLatestPositions() {
@@ -126,6 +101,15 @@ async function loadLatestPositions() {
     const response = await fetch(
         "https://api.openf1.org/v1/position?session_key=latest"
     );
+
+    if (!response.ok) {
+        console.warn(
+            "Positions endpoint fout:",
+            response.status
+        );
+
+        return {};
+    }
 
     const positions =
         await response.json();
@@ -160,57 +144,97 @@ async function loadLatestPositions() {
 
 async function loadLatestLaps() {
 
-    const response = await fetch(
-        "https://api.openf1.org/v1/laps?session_key=latest"
-    );
+    try {
 
-    const laps =
-        await response.json();
+        const response = await fetch(
+            "https://api.openf1.org/v1/laps?session_key=latest"
+        );
 
-    console.log(
-        "Lap records:",
-        laps.length
-    );
+        if (!response.ok) {
 
-    const latestLaps = {};
-
-    laps.forEach(lap => {
-
-        const driverNumber =
-            lap.driver_number;
-
-        if (
-            !latestLaps[driverNumber]
-        ) {
-            latestLaps[driverNumber] =
-                lap;
-
-            return;
-        }
-
-        const currentDate =
-            new Date(
-                lap.date_start ||
-                "1900-01-01"
+            console.warn(
+                "Laps endpoint fout:",
+                response.status
             );
 
-        const latestDate =
-            new Date(
+            return {};
+        }
+
+        const laps =
+            await response.json();
+
+        if (!Array.isArray(laps)) {
+
+            console.warn(
+                "Laps response geen array"
+            );
+
+            return {};
+        }
+
+        console.log(
+            "Lap records:",
+            laps.length
+        );
+
+        const latestLaps = {};
+
+        laps.forEach(lap => {
+
+            const driverNumber =
+                lap.driver_number;
+
+            if (
+                !latestLaps[driverNumber]
+            ) {
+
                 latestLaps[
                     driverNumber
-                ].date_start ||
-                "1900-01-01"
-            );
+                ] = lap;
 
-        if (currentDate > latestDate) {
-            latestLaps[
-                driverNumber
-            ] = lap;
-        }
+                return;
+            }
 
-    });
+            const currentDate =
+                new Date(
+                    lap.date_start ||
+                    "1900-01-01"
+                );
 
-    return latestLaps;
+            const latestDate =
+                new Date(
+                    latestLaps[
+                        driverNumber
+                    ].date_start ||
+                    "1900-01-01"
+                );
+
+            if (
+                currentDate >
+                latestDate
+            ) {
+
+                latestLaps[
+                    driverNumber
+                ] = lap;
+
+            }
+
+        });
+
+        return latestLaps;
+
+    }
+    catch (error) {
+
+        console.warn(
+            "Laps laden mislukt",
+            error
+        );
+
+        return {};
+    }
+
 }
 
 async function loadDrivers() {
@@ -274,10 +298,6 @@ async function loadDrivers() {
             "driverList"
         );
 
-    if (!driverList) {
-        return;
-    }
-
     driverList.innerHTML = "";
 
     leaderboard.forEach(driver => {
@@ -294,38 +314,28 @@ async function loadDrivers() {
             ] || "#FFFFFF";
 
         row.innerHTML = `
-
-            <div
-                class="position"
-                style="
-                    color:${color};
-                    font-weight:bold;
-                ">
+            <div class="position"
+                 style="color:${color}">
                 P${driver.position}
             </div>
 
-            <div
-                class="driverCode">
+            <div class="driverCode">
                 ${driver.name_acronym}
             </div>
 
-            <div
-                class="lapTime">
+            <div class="lapTime">
                 ${driver.lapTime}
             </div>
 
-            <div
-                class="team"
-                style="
-                    color:${color};
-                    font-weight:bold;
-                ">
+            <div class="team"
+                 style="color:${color}">
                 ${driver.team_name}
             </div>
-
         `;
 
-        driverList.appendChild(row);
+        driverList.appendChild(
+            row
+        );
 
     });
 
@@ -335,46 +345,32 @@ async function loadDashboard() {
 
     try {
 
-        const raceStatus =
-            document.getElementById(
-                "raceStatus"
-            );
-
-        if (raceStatus) {
-            raceStatus.textContent =
-                "🟢 LIVE";
-        }
+        document.getElementById(
+            "raceStatus"
+        ).textContent =
+            "🟢 LIVE";
 
         await loadSession();
 
         await loadDrivers();
 
-        const lastUpdate =
-            document.getElementById(
-                "lastUpdate"
-            );
-
-        if (lastUpdate) {
-            lastUpdate.textContent =
-                new Date().toLocaleTimeString(
+        document.getElementById(
+            "lastUpdate"
+        ).textContent =
+            new Date()
+                .toLocaleTimeString(
                     "nl-NL"
                 );
-        }
 
     }
     catch (error) {
 
         console.error(error);
 
-        const raceStatus =
-            document.getElementById(
-                "raceStatus"
-            );
-
-        if (raceStatus) {
-            raceStatus.textContent =
-                "🔴 OFFLINE";
-        }
+        document.getElementById(
+            "raceStatus"
+        ).textContent =
+            "🔴 OFFLINE";
 
     }
 
