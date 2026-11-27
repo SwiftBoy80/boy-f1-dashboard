@@ -11,20 +11,47 @@
 
 <body>
 
-    <header>
-        <h1>🏎️ Boy's Pit Wall</h1>
-        <div id="raceStatus">Verbinden...</div>
+    <header class="topbar">
+
+        <div class="eventInfo">
+
+            <h1 id="eventName">
+                Formula 1
+            </h1>
+
+            <div id="sessionTitle">
+                Loading...
+            </div>
+
+        </div>
+
+        <div class="statusInfo">
+
+            <div id="raceStatus">
+                Verbinden...
+            </div>
+
+            <div id="lastUpdate">
+                -
+            </div>
+
+        </div>
+
     </header>
 
-    <div class="dashboard">
+    <main class="dashboard">
 
         <section class="panel">
-            <h2>Drivers</h2>
+
+            <h2>Timing</h2>
+
             <div id="driverList"></div>
+
         </section>
 
         <section class="panel">
-            <h2>Race Info</h2>
+
+            <h2>Sessie</h2>
 
             <div class="infoRow">
                 <span>Session</span>
@@ -38,17 +65,12 @@
 
             <div class="infoRow">
                 <span>Land</span>
-                <span id="country">-</span>
-            </div>
-
-            <div class="infoRow">
-                <span>Laatste update</span>
-                <span id="lastUpdate">-</span>
+                <span id="countryName">-</span>
             </div>
 
         </section>
 
-    </div>
+    </main>
 
     <script src="script.js"></script>
 
