@@ -1,25 +1,61 @@
-body{
-    background:#111;
-    color:white;
-    font-family:Arial, sans-serif;
+body {
     margin:0;
     padding:20px;
+    background:#0b0b0b;
+    color:white;
+    font-family:Segoe UI, Arial, sans-serif;
 }
 
-header{
+header {
     text-align:center;
     margin-bottom:20px;
 }
 
-.drivers{
-    background:#1e1e1e;
-    padding:20px;
-    border-radius:10px;
+h1 {
+    margin-bottom:5px;
 }
 
-.driver{
+.dashboard {
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+}
+
+.panel {
+    background:#1a1a1a;
+    border-radius:12px;
+    padding:20px;
+}
+
+.driver {
     display:flex;
     justify-content:space-between;
-    padding:8px;
+    align-items:center;
+    padding:10px;
     border-bottom:1px solid #333;
+}
+
+.driver:last-child {
+    border-bottom:none;
+}
+
+.number {
+    width:50px;
+    color:#00d4ff;
+    font-weight:bold;
+}
+
+.infoRow {
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid #333;
+}
+
+@media (max-width: 900px) {
+
+    .dashboard {
+        grid-template-columns:1fr;
+    }
+
 }
