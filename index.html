@@ -5,25 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boy's Pit Wall</title>
-
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
     <header>
-        <h1>🏁 Boy's Pit Wall</h1>
-        <div id="raceStatus">Loading...</div>
+        <h1>🏎️ Boy's Pit Wall</h1>
+        <div id="raceStatus">Verbinden...</div>
     </header>
 
-    <main>
+    <div class="dashboard">
 
-        <section class="drivers">
-            <h2>Stand</h2>
+        <section class="panel">
+            <h2>Posities</h2>
             <div id="driverList"></div>
         </section>
 
-    </main>
+        <section class="panel">
+            <h2>Race Info</h2>
+
+            <div class="infoRow">
+                <span>Session</span>
+                <span id="sessionName">-</span>
+            </div>
+
+            <div class="infoRow">
+                <span>Circuit</span>
+                <span id="circuitName">-</span>
+            </div>
+
+            <div class="infoRow">
+                <span>Land</span>
+                <span id="country">-</span>
+            </div>
+
+        </section>
+
+    </div>
 
     <script src="script.js"></script>
 
