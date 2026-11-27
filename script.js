@@ -72,7 +72,6 @@ async function loadDrivers() {
                 ? positionData.position
                 : 99
         };
-
     });
 
     leaderboard.sort((a, b) =>
@@ -84,7 +83,7 @@ async function loadDrivers() {
 
     list.innerHTML = "";
 
-    leaderboard.forEach(driver => {
+    leaderboard.forEach((driver, index) => {
 
         const row =
             document.createElement("div");
@@ -93,6 +92,14 @@ async function loadDrivers() {
 
         const color =
             teamColors[driver.team_name] || "#ffffff";
+
+        let gapText = "-";
+
+        if (index === 0) {
+            gapText = "LEADER";
+        } else {
+            gapText = `+${index}`;
+        }
 
         row.innerHTML = `
 
@@ -104,6 +111,10 @@ async function loadDrivers() {
 
             <span>
                 ${driver.full_name}
+            </span>
+
+            <span class="gap">
+                ${gapText}
             </span>
 
             <span
