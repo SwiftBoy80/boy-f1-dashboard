@@ -1,3 +1,4 @@
+alert("NIEUWE SCRIPT GELADEN");
 console.log("SCRIPT VERSION 27-11-2026");
 const teamColors = {
     "Red Bull Racing": "#3671C6",
