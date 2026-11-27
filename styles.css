@@ -1,22 +1,27 @@
 body {
     margin: 0;
     padding: 20px;
-    background: #0b0b0b;
+    background: #090909;
     color: white;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Segoe UI", sans-serif;
 }
 
-header {
-    text-align: center;
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
     margin-bottom: 20px;
 }
 
-h1 {
-    margin-bottom: 5px;
+.eventInfo h1 {
+    margin: 0;
+    font-size: 34px;
 }
 
-#raceStatus {
-    color: #00d4ff;
+#sessionTitle {
+    color: #999;
+    margin-top: 5px;
 }
 
 .dashboard {
@@ -26,7 +31,7 @@ h1 {
 }
 
 .panel {
-    background: #1a1a1a;
+    background: #171717;
     border-radius: 12px;
     padding: 20px;
 }
@@ -38,15 +43,17 @@ h1 {
 .driver {
     display: grid;
     grid-template-columns:
-        60px
+        70px
         80px
         120px
-        40px
-        180px;
+        1fr;
+
+    align-items: center;
 
     gap: 10px;
-    align-items: center;
+
     padding: 10px;
+
     border-bottom: 1px solid #333;
 }
 
@@ -54,22 +61,24 @@ h1 {
     border-bottom: none;
 }
 
-.number {
+.position {
     font-weight: bold;
     font-size: 20px;
-    min-width: 50px;
+}
+
+.driverCode {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.lapTime {
+    color: #bbbbbb;
+    font-family: monospace;
 }
 
 .team {
-    font-size: 14px;
-    font-weight: bold;
     text-align: right;
-}
-
-.gap {
-    text-align: center;
-    color: #bbbbbb;
-    font-family: monospace;
+    font-weight: bold;
 }
 
 .infoRow {
@@ -85,20 +94,14 @@ h1 {
     border-bottom: none;
 }
 
-.driverCode {
-    font-weight: bold;
-    font-size: 18px;
+#raceStatus {
+    text-align: right;
+    margin-bottom: 8px;
 }
 
-.lapTime {
-    color: #cccccc;
-    font-family: monospace;
-}
-
-.tyre {
-    text-align: center;
-    font-weight: bold;
-    width: 30px;
+#lastUpdate {
+    color: #999;
+    text-align: right;
 }
 
 @media (max-width: 900px) {
@@ -108,12 +111,11 @@ h1 {
     }
 
     .driver {
-        grid-template-columns: 50px 1fr;
-    }
-
-    .team {
-        display: none;
+        grid-template-columns:
+            60px
+            70px
+            100px
+            1fr;
     }
 
 }
-
