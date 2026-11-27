@@ -19,6 +19,8 @@ async function loadSession() {
 
     const data = await response.json();
 
+    if (!data.length) return;
+
     const session = data[0];
 
     document.getElementById("sessionName").textContent =
@@ -33,48 +35,89 @@ async function loadSession() {
 
 async function loadDrivers() {
 
-    const response = await fetch(
+    const driversResponse = await fetch(
         "https://api.openf1.org/v1/drivers?session_key=latest"
     );
 
-    const drivers = await response.json();
+    const positionsResponse = await fetch(
+        "https://api.openf1.org/v1/position?session_key=latest"
+    );
 
-    const list = document.getElementById("driverList");
+    const drivers = await driversResponse.json();
+    const positions = await positionsResponse.json();
+
+    const latestPositions = {};
+
+    positions.forEach(pos => {
+
+        const number = pos.driver_number;
+
+        if (
+            !latestPositions[number] ||
+            new Date(pos.date) >
+            new Date(latestPositions[number].date)
+        ) {
+            latestPositions[number] = pos;
+        }
+    });
+
+    const leaderboard = drivers.map(driver => {
+
+        const positionData =
+            latestPositions[driver.driver_number];
+
+        return {
+            ...driver,
+            position: positionData
+                ? positionData.position
+                : 99
+        };
+
+    });
+
+    leaderboard.sort((a, b) =>
+        a.position - b.position
+    );
+
+    const list =
+        document.getElementById("driverList");
 
     list.innerHTML = "";
 
-    drivers
-        .sort((a, b) => a.driver_number - b.driver_number)
-        .forEach(driver => {
+    leaderboard.forEach(driver => {
 
-            const row = document.createElement("div");
+        const row =
+            document.createElement("div");
 
-            row.className = "driver";
+        row.className = "driver";
 
-            const color =
-                teamColors[driver.team_name] || "#ffffff";
+        const color =
+            teamColors[driver.team_name] || "#ffffff";
 
-            row.innerHTML = `
-                <span
-                    class="number"
-                    style="color:${color}">
-                    ${driver.driver_number}
-                </span>
+        row.innerHTML = `
 
-                <span>
-                    ${driver.full_name}
-                </span>
+            <span
+                class="number"
+                style="color:${color}">
+                P${driver.position}
+            </span>
 
-                <span
-                    class="team"
-                    style="color:${color}">
-                    ${driver.team_name}
-                </span>
-            `;
+            <span>
+                ${driver.full_name}
+            </span>
 
-            list.appendChild(row);
+            <span
+                class="team"
+                style="color:${color}">
+                ${driver.team_name}
+            </span>
 
-        });
+        `;
+
+        list.appendChild(row);
+
+    });
+
 }
 
 async function loadDashboard() {
@@ -87,17 +130,22 @@ async function loadDashboard() {
         await loadSession();
         await loadDrivers();
 
-    } catch (error) {
+    }
+    catch (error) {
 
         console.error(error);
 
         document.getElementById("raceStatus")
             .textContent = "❌ API fout";
+
     }
+
 }
 
 loadDashboard();
 
 setInterval(() => {
+
     loadDashboard();
-}, 30000);
+
+}, 10000);
