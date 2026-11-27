@@ -11,6 +11,17 @@ const teamColors = {
     "Racing Bulls": "#6692FF"
 };
 
+const tyreMap = {
+
+    0: "-",
+    16: "S",
+    17: "M",
+    18: "H",
+    19: "I",
+    20: "W"
+
+};
+
 async function loadSession() {
 
     const response = await fetch(
@@ -33,6 +44,33 @@ async function loadSession() {
         session.country_name;
 }
 
+async function loadLatestLaps() {
+
+    const response = await fetch(
+        "https://api.openf1.org/v1/laps?session_key=latest"
+    );
+
+    const laps = await response.json();
+
+    const latestLaps = {};
+
+    laps.forEach(lap => {
+
+        const number = lap.driver_number;
+
+        if (
+            !latestLaps[number] ||
+            new Date(lap.date_start) >
+            new Date(latestLaps[number].date_start)
+        ) {
+            latestLaps[number] = lap;
+        }
+
+    });
+
+    return latestLaps;
+}
+
 async function loadDrivers() {
 
     const driversResponse = await fetch(
@@ -43,8 +81,11 @@ async function loadDrivers() {
         "https://api.openf1.org/v1/position?session_key=latest"
     );
 
-    const drivers = await driversResponse.json();
-    const positions = await positionsResponse.json();
+const drivers = await driversResponse.json();
+const positions = await positionsResponse.json();
+
+const latestLaps =
+    await loadLatestLaps();
 
     const latestPositions = {};
 
