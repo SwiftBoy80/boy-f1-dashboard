@@ -81,3 +81,9 @@ async function loadDashboard() {
 }
 
 loadDashboard();
+
+setInterval(() => {
+
+    loadDashboard();
+
+}, 30000);
