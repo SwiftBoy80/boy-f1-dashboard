@@ -119,3 +119,29 @@ body {
     }
 
 }
+
+.countdownContainer {
+
+    margin-top: 20px;
+    text-align: center;
+
+}
+
+#countdown {
+
+    font-size: 42px;
+    font-weight: bold;
+
+    color: #27F4D2;
+
+    letter-spacing: 2px;
+
+}
+
+@media (max-width:900px){
+
+    #countdown{
+        font-size:28px;
+    }
+
+}
