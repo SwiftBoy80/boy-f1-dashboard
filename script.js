@@ -1,6 +1,7 @@
 console.log("BOY PIT WALL v3 GELADEN");
 
 let currentSessionType = "";
+let countdownInterval = null;
 
 const teamColors = {
     "Red Bull Racing": "#3671C6",
@@ -94,6 +95,176 @@ async function loadSession() {
         "sessionTitle"
     ).textContent =
         sessionCode;
+}
+
+async function loadNextSession() {
+
+    try {
+
+        const response = await fetch(
+            "https://api.openf1.org/v1/sessions"
+        );
+
+        if (!response.ok) {
+            return;
+        }
+
+        const sessions =
+            await response.json();
+
+        const now =
+            new Date();
+
+        const futureSessions =
+            sessions.filter(session => {
+
+                return new Date(
+                    session.date_start
+                ) > now;
+
+            });
+
+        futureSessions.sort((a, b) => {
+
+            return (
+                new Date(a.date_start) -
+                new Date(b.date_start)
+            );
+
+        });
+
+        if (!futureSessions.length) {
+            return;
+        }
+
+        const nextSession =
+            futureSessions[0];
+
+        const sessionCode =
+            getSessionCode(
+                nextSession.session_name
+            );
+
+        document.getElementById(
+            "nextSessionName"
+        ).textContent =
+            sessionCode;
+
+        const localDate =
+            new Date(
+                nextSession.date_start
+            );
+
+        document.getElementById(
+            "nextSessionTime"
+        ).textContent =
+            localDate.toLocaleString(
+                "nl-NL",
+                {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        startCountdown(
+            nextSession.date_start
+        );
+
+    }
+    catch(error){
+
+        console.error(
+            "Countdown fout",
+            error
+        );
+
+    }
+
+}
+
+function startCountdown(
+    targetDate
+) {
+
+    if (countdownInterval) {
+
+        clearInterval(
+            countdownInterval
+        );
+
+    }
+
+    const countdownElement =
+        document.getElementById(
+            "countdown"
+        );
+
+    countdownInterval =
+        setInterval(() => {
+
+            const now =
+                new Date();
+
+            const target =
+                new Date(
+                    targetDate
+                );
+
+            const diff =
+                target - now;
+
+            if (diff <= 0) {
+
+                countdownElement.textContent =
+                    "LIVE";
+
+                return;
+
+            }
+
+            const totalSeconds =
+                Math.floor(
+                    diff / 1000
+                );
+
+            const days =
+                Math.floor(
+                    totalSeconds / 86400
+                );
+
+            const hours =
+                Math.floor(
+                    (totalSeconds % 86400)
+                    / 3600
+                );
+
+            const minutes =
+                Math.floor(
+                    (totalSeconds % 3600)
+                    / 60
+                );
+
+            const seconds =
+                totalSeconds % 60;
+
+            if (days > 0) {
+
+                countdownElement.textContent =
+                    `${days}d ${hours}h`;
+
+            }
+            else {
+
+                countdownElement.textContent =
+                    `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+
+            }
+
+        }, 1000);
+
 }
 
 async function loadLatestPositions() {
@@ -350,9 +521,11 @@ async function loadDashboard() {
         ).textContent =
             "🟢 LIVE";
 
-        await loadSession();
+await loadSession();
 
-        await loadDrivers();
+await loadNextSession();
+
+await loadDrivers();
 
         document.getElementById(
             "lastUpdate"
